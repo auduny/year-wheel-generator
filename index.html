@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Årshjul</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <header class="sidebar-header">
+      <h1 data-i18n="appTitle"></h1>
+    </header>
+
+    <section>
+      <h2 data-i18n="settings"></h2>
+      <label class="field-label">
+        <span data-i18n="wheelTitle"></span>
+        <input id="title" type="text" maxlength="60">
+      </label>
+      <div class="row">
+        <label class="field-label">
+          <span data-i18n="year"></span>
+          <input id="year" type="number" min="1900" max="9999" step="1">
+        </label>
+        <label class="field-label">
+          <span data-i18n="language"></span>
+          <select id="lang">
+            <option value="nb">Norsk</option>
+            <option value="en">English</option>
+          </select>
+        </label>
+      </div>
+      <label class="check"><input id="showWeekNumbers" type="checkbox"><span data-i18n="showWeekNumbers"></span></label>
+      <label class="check"><input id="showLegend" type="checkbox"><span data-i18n="showLegend"></span></label>
+    </section>
+
+    <section>
+      <h2 data-i18n="categories"></h2>
+      <ul id="categoryList" class="list"></ul>
+      <form id="categoryForm" class="row">
+        <input id="newCategoryName" type="text" maxlength="40" data-i18n-placeholder="categoryName" required>
+        <input id="newCategoryColor" type="color" value="#2563eb">
+        <button type="submit" data-i18n="addCategory"></button>
+      </form>
+    </section>
+
+    <section>
+      <h2 data-i18n="events"></h2>
+      <form id="eventForm" class="card">
+        <label class="field-label">
+          <span data-i18n="eventTitle"></span>
+          <input id="eventTitle" type="text" maxlength="60" required>
+        </label>
+        <div class="row">
+          <label class="field-label">
+            <span data-i18n="category"></span>
+            <select id="eventCategory"></select>
+          </label>
+          <label class="field-label">
+            <span data-i18n="recurrence"></span>
+            <select id="eventType">
+              <option value="yearly" data-i18n="typeYearly"></option>
+              <option value="quarterly" data-i18n="typeQuarterly"></option>
+              <option value="monthly" data-i18n="typeMonthly"></option>
+              <option value="weekly" data-i18n="typeWeekly"></option>
+            </select>
+          </label>
+        </div>
+        <div class="row">
+          <label class="field-label field" data-types="yearly">
+            <span data-i18n="month"></span>
+            <select id="fieldMonth"></select>
+          </label>
+          <label class="field-label field" data-types="quarterly">
+            <span data-i18n="monthInQuarter"></span>
+            <select id="fieldMonthInQuarter"></select>
+          </label>
+          <label class="field-label field" data-types="yearly quarterly monthly">
+            <span data-i18n="day"></span>
+            <select id="fieldDay"></select>
+          </label>
+          <label class="field-label field" data-types="weekly">
+            <span data-i18n="weekday"></span>
+            <select id="fieldWeekday"></select>
+          </label>
+        </div>
+        <div class="row">
+          <button type="submit" id="eventSubmit"></button>
+          <button type="button" id="eventCancel" class="secondary" data-i18n="cancel" hidden></button>
+        </div>
+      </form>
+      <div id="eventList" class="list"></div>
+    </section>
+
+    <section>
+      <h2 data-i18n="data"></h2>
+      <div class="buttons">
+        <button id="downloadSvgBtn" data-i18n="downloadSvg"></button>
+        <button id="downloadPngBtn" data-i18n="downloadPng"></button>
+        <button id="exportJsonBtn" class="secondary" data-i18n="exportJson"></button>
+        <label class="button secondary">
+          <span data-i18n="importJson"></span>
+          <input id="importJson" type="file" accept="application/json,.json" hidden>
+        </label>
+        <button id="loadExampleBtn" class="secondary" data-i18n="loadExample"></button>
+        <button id="clearBtn" class="danger" data-i18n="clearAll"></button>
+      </div>
+      <p id="message" class="message" hidden></p>
+    </section>
+  </aside>
+
+  <main class="main">
+    <div id="wheel" class="wheel"></div>
+  </main>
+
+  <script src="js/recurrence.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/export.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
