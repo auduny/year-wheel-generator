@@ -3,7 +3,7 @@
   'use strict';
 
   const KEY = 'yearwheel:v1';
-  const TYPES = ['yearly', 'quarterly', 'monthly', 'weekly'];
+  const TYPES = ['yearly', 'quarterly', 'monthly', 'weekly', 'daily'];
 
   function uid() {
     if (root.crypto && typeof root.crypto.randomUUID === 'function') return root.crypto.randomUUID();
@@ -16,6 +16,13 @@
     return Math.min(hi, Math.max(lo, n));
   }
 
+  function withSeason(out, r) {
+    const from = clampInt(r.fromMonth, 1, 12, null);
+    const to = clampInt(r.toMonth, 1, 12, null);
+    if (from != null && to != null) Object.assign(out, { fromMonth: from, toMonth: to });
+    return out;
+  }
+
   function normalizeRecurrence(r) {
     switch (r.type) {
       case 'yearly':
@@ -23,9 +30,11 @@
       case 'quarterly':
         return { type: 'quarterly', monthInQuarter: clampInt(r.monthInQuarter, 1, 3, 1), day: clampInt(r.day, 1, 31, 1) };
       case 'monthly':
-        return { type: 'monthly', day: r.day === 'last' ? 'last' : clampInt(r.day, 1, 31, 1) };
+        return withSeason({ type: 'monthly', day: r.day === 'last' ? 'last' : clampInt(r.day, 1, 31, 1) }, r);
       case 'weekly':
-        return { type: 'weekly', weekday: clampInt(r.weekday, 0, 6, 0) };
+        return withSeason({ type: 'weekly', weekday: clampInt(r.weekday, 0, 6, 0) }, r);
+      case 'daily':
+        return withSeason({ type: 'daily' }, r);
       default:
         return null;
     }

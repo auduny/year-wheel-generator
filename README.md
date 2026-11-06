@@ -3,8 +3,11 @@
 A single-page browser tool for building a year wheel: a circular calendar where
 recurring activities are placed at the time of year they happen.
 
-- Activities recur **yearly** (fixed date), **quarterly**, **monthly**, or **weekly**.
+- Activities recur **yearly** (fixed date), **quarterly**, **monthly**, **weekly**, or **daily**.
+  Monthly, weekly and daily ones can be limited to a season, like May–September or December–March.
 - Activities are grouped in **categories**, each drawn as its own colored ring.
+- Four boxes around the wheel list the yearly, quarterly, monthly and weekly activities, with the exact date as secondary text.
+  Daily activities get a box below the wheel, shown only when there are any.
 - Norwegian and English UI, with month and weekday names from the browser's locale data.
 - Auto-saves to `localStorage`, with JSON import/export for sharing and backup.
 - Exports to **SVG** and **PNG** (3000 px).
@@ -58,5 +61,9 @@ Recurrence shapes:
 - `{ "type": "quarterly", "monthInQuarter": 1-3, "day": 1-31 }`
 - `{ "type": "monthly", "day": 1-31 | "last" }`
 - `{ "type": "weekly", "weekday": 0-6 }` where 0 is Monday
+- `{ "type": "daily" }`
+
+Monthly, weekly and daily rules can take an optional season, `"fromMonth": 1-12, "toMonth": 1-12`
+(inclusive). It may wrap past New Year, e.g. `"fromMonth": 12, "toMonth": 3` for winter.
 
 Days beyond a month's length clamp to the last day of that month.

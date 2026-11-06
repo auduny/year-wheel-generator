@@ -41,6 +41,26 @@ test('monthly clamps and supports "last"', () => {
   assert.equal(ymd(last[11]), '2027-12-31');
 });
 
+test('daily gives every day of the year', () => {
+  const days = R.expandEvent({ recurrence: { type: 'daily' } }, 2027);
+  assert.equal(days.length, 365);
+  assert.equal(ymd(days[0]), '2027-01-01');
+  assert.equal(ymd(days[364]), '2027-12-31');
+  assert.equal(R.expandEvent({ recurrence: { type: 'daily' } }, 2024).length, 366);
+});
+
+test('season limits repeating events, also across New Year', () => {
+  const months = (ds) => [...new Set(ds.map((d) => d.getUTCMonth() + 1))];
+  const lawn = R.expandEvent({ recurrence: { type: 'weekly', weekday: 5, fromMonth: 5, toMonth: 9 } }, 2027);
+  assert.deepEqual(months(lawn), [5, 6, 7, 8, 9]);
+  const snow = R.expandEvent({ recurrence: { type: 'weekly', weekday: 5, fromMonth: 12, toMonth: 3 } }, 2027);
+  assert.deepEqual(months(snow), [1, 2, 3, 12]);
+  const monthly = R.expandEvent({ recurrence: { type: 'monthly', day: 1, fromMonth: 6, toMonth: 6 } }, 2027);
+  assert.deepEqual(monthly.map(ymd), ['2027-06-01']);
+  const daily = R.expandEvent({ recurrence: { type: 'daily', fromMonth: 2, toMonth: 2 } }, 2028);
+  assert.equal(daily.length, 29);
+});
+
 test('weekly gives 52 or 53 dates on the right weekday', () => {
   // 2027 starts on a Friday (weekday index 4) -> 53 Fridays
   const fridays = R.expandEvent({ recurrence: { type: 'weekly', weekday: 4 } }, 2027);

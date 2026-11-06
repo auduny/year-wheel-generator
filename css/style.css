@@ -114,7 +114,7 @@ button.icon:hover { background: var(--bg); color: var(--text); filter: none; }
 .message.error { background: #fef2f2; color: #991b1b; }
 
 .main { padding: 16px; display: flex; align-items: flex-start; justify-content: center; overflow: auto; }
-.wheel { width: 100%; max-width: calc(100vh - 32px); }
+.wheel { width: 100%; max-width: calc((100vh - 32px) * var(--aspect, 1)); }
 .wheel svg { width: 100%; height: auto; display: block; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12); }
 
 @media (max-width: 900px) {

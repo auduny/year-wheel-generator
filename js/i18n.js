@@ -29,6 +29,7 @@
       typeQuarterly: 'Hvert kvartal',
       typeMonthly: 'Hver måned',
       typeWeekly: 'Hver uke',
+      typeDaily: 'Hver dag',
       month: 'Måned',
       day: 'Dag',
       lastDay: 'Siste dag',
@@ -37,6 +38,9 @@
       secondMonth: '2. måned',
       thirdMonth: '3. måned',
       weekday: 'Ukedag',
+      seasonFrom: 'Fra måned',
+      seasonTo: 'Til måned',
+      allYear: 'Hele året',
       addEvent: 'Legg til aktivitet',
       saveEvent: 'Lagre endringer',
       cancel: 'Avbryt',
@@ -56,6 +60,12 @@
       importOk: 'Importert.',
       quarter: 'K',
       legend: 'Forklaring',
+      boxYearly: 'Årlig',
+      boxQuarterly: 'Kvartalsvis',
+      boxMonthly: 'Månedlig',
+      boxWeekly: 'Ukentlig',
+      boxDaily: 'Daglig',
+      moreItems: '+{n} til',
       week: 'Uke',
       untitled: 'Uten navn',
       defaultTitle: 'Årshjul',
@@ -88,6 +98,7 @@
       typeQuarterly: 'Every quarter',
       typeMonthly: 'Every month',
       typeWeekly: 'Every week',
+      typeDaily: 'Every day',
       month: 'Month',
       day: 'Day',
       lastDay: 'Last day',
@@ -96,6 +107,9 @@
       secondMonth: '2nd month',
       thirdMonth: '3rd month',
       weekday: 'Weekday',
+      seasonFrom: 'From month',
+      seasonTo: 'To month',
+      allYear: 'All year',
       addEvent: 'Add activity',
       saveEvent: 'Save changes',
       cancel: 'Cancel',
@@ -115,6 +129,12 @@
       importOk: 'Imported.',
       quarter: 'Q',
       legend: 'Legend',
+      boxYearly: 'Yearly',
+      boxQuarterly: 'Quarterly',
+      boxMonthly: 'Monthly',
+      boxWeekly: 'Weekly',
+      boxDaily: 'Daily',
+      moreItems: '+{n} more',
       week: 'Week',
       untitled: 'Untitled',
       defaultTitle: 'Year wheel',
@@ -174,8 +194,24 @@
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
   }
 
+  // "mai–sep" / "May–Sep" for a seasonal rule, '' otherwise.
+  function describeSeason(r) {
+    if (!r || !r.fromMonth || !r.toMonth) return '';
+    const m = (n) => {
+      const s = monthName(n, 'short').replace('.', '');
+      return current === 'nb' ? s.toLowerCase() : s;
+    };
+    return `${m(r.fromMonth)}–${m(r.toMonth)}`;
+  }
+
   // Short human summary of a recurrence rule for the legend and event list.
   function describeRecurrence(r) {
+    const base = describeRule(r);
+    const season = describeSeason(r);
+    return season ? `${base}, ${season}` : base;
+  }
+
+  function describeRule(r) {
     if (!r) return '';
     switch (r.type) {
       case 'yearly':
@@ -196,6 +232,8 @@
         return current === 'nb'
           ? `hver ${weekdayName(r.weekday).toLowerCase()}`
           : `every ${weekdayName(r.weekday)}`;
+      case 'daily':
+        return current === 'nb' ? 'hver dag' : 'every day';
       default:
         return '';
     }
@@ -216,6 +254,6 @@
 
   root.I18n = {
     setLang, getLang, t, locale, monthName, weekdayName, formatDate,
-    describeRecurrence, applyTranslations, ordinalDay,
+    describeRecurrence, describeSeason, applyTranslations, ordinalDay,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

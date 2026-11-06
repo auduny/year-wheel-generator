@@ -67,9 +67,26 @@
     return out;
   }
 
+  // Optional season on weekly, monthly and daily events: fromMonth..toMonth
+  // inclusive, wrapping past New Year when fromMonth > toMonth (e.g. Nov–Mar).
+  function hasSeason(r) {
+    return !!r && r.fromMonth >= 1 && r.fromMonth <= 12 && r.toMonth >= 1 && r.toMonth <= 12;
+  }
+
+  function inSeason(r, month) {
+    if (!hasSeason(r)) return true;
+    return r.fromMonth <= r.toMonth
+      ? month >= r.fromMonth && month <= r.toMonth
+      : month >= r.fromMonth || month <= r.toMonth;
+  }
+
   function expandEvent(event, year) {
     const r = event && event.recurrence;
     if (!r) return [];
+    return expandRule(r, year).filter((d) => inSeason(r, d.getUTCMonth() + 1));
+  }
+
+  function expandRule(r, year) {
     switch (r.type) {
       case 'yearly': {
         const month = Math.min(Math.max(Number(r.month) || 1, 1), 12);
@@ -104,6 +121,15 @@
         }
         return dates;
       }
+      case 'daily': {
+        const dates = [];
+        const cursor = makeDate(year, 1, 1);
+        while (cursor.getUTCFullYear() === year) {
+          dates.push(new Date(cursor.getTime()));
+          cursor.setUTCDate(cursor.getUTCDate() + 1);
+        }
+        return dates;
+      }
       default:
         return [];
     }
@@ -130,7 +156,7 @@
 
   const api = {
     isLeapYear, daysInYear, daysInMonth, makeDate, clampDay, dayOfYear,
-    weekdayMon0, isoWeek, isoWeeksInYear, expandEvent, angleFor,
+    weekdayMon0, isoWeek, isoWeeksInYear, hasSeason, inSeason, expandEvent, angleFor,
     angleForDayOfYear, monthStartAngle, monthEndAngle,
   };
 

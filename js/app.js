@@ -67,7 +67,9 @@
   // ---------- wheel ----------
 
   function renderWheel() {
-    $('wheel').replaceChildren(Render.buildSvg(state));
+    const svg = Render.buildSvg(state);
+    $('wheel').style.setProperty('--aspect', svg.getAttribute('width') / svg.getAttribute('height'));
+    $('wheel').replaceChildren(svg);
   }
 
   // ---------- settings ----------
@@ -191,6 +193,9 @@
 
   function buildSelects() {
     setOptions($('fieldMonth'), Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: I18n.monthName(i + 1) })), true);
+    const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: I18n.monthName(i + 1) }));
+    setOptions($('fieldFromMonth'), [{ value: '', label: t('allYear') }, ...months], true);
+    setOptions($('fieldToMonth'), months, true);
     setOptions($('fieldWeekday'), Array.from({ length: 7 }, (_, i) => ({ value: i, label: I18n.weekdayName(i) })), true);
     setOptions($('fieldMonthInQuarter'), [1, 2, 3].map((n) => ({ value: n, label: t(['firstMonth', 'secondMonth', 'thirdMonth'][n - 1]) })), true);
     const days = Array.from({ length: 31 }, (_, i) => ({ value: i + 1, label: String(i + 1) }));
@@ -215,10 +220,20 @@
     }
     $('eventSubmit').textContent = t(editingId ? 'saveEvent' : 'addEvent');
     $('eventCancel').hidden = !editingId;
+    syncSeasonFields();
     $('eventSubmit').disabled = !state.categories.length;
   }
 
   function readRecurrence(type) {
+    const r = readRule(type);
+    const from = $('fieldFromMonth').value;
+    if (r && from && ['monthly', 'weekly', 'daily'].includes(type)) {
+      Object.assign(r, { fromMonth: Number(from), toMonth: Number($('fieldToMonth').value) });
+    }
+    return r;
+  }
+
+  function readRule(type) {
     switch (type) {
       case 'yearly':
         return { type, month: Number($('fieldMonth').value), day: Number($('fieldDay').value) };
@@ -230,6 +245,8 @@
       }
       case 'weekly':
         return { type, weekday: Number($('fieldWeekday').value) };
+      case 'daily':
+        return { type };
       default:
         return null;
     }
@@ -244,6 +261,14 @@
     if (r.type === 'quarterly') { $('fieldMonthInQuarter').value = r.monthInQuarter; $('fieldDay').value = r.day; }
     if (r.type === 'monthly') { $('fieldDay').value = r.day; }
     if (r.type === 'weekly') { $('fieldWeekday').value = r.weekday; }
+    $('fieldFromMonth').value = r.fromMonth || '';
+    $('fieldToMonth').value = r.toMonth || 12;
+    syncSeasonFields();
+  }
+
+  // "To month" only means something once a start month is picked.
+  function syncSeasonFields() {
+    $('fieldToMonth').disabled = !$('fieldFromMonth').value;
   }
 
   function startEdit(ev) {
@@ -261,6 +286,7 @@
 
   function bindEventForm() {
     $('eventType').addEventListener('change', syncEventForm);
+    $('fieldFromMonth').addEventListener('change', syncSeasonFields);
     $('eventCancel').addEventListener('click', cancelEdit);
     $('eventForm').addEventListener('submit', (e) => {
       e.preventDefault();

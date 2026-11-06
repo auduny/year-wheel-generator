@@ -64,6 +64,7 @@
               <option value="quarterly" data-i18n="typeQuarterly"></option>
               <option value="monthly" data-i18n="typeMonthly"></option>
               <option value="weekly" data-i18n="typeWeekly"></option>
+              <option value="daily" data-i18n="typeDaily"></option>
             </select>
           </label>
         </div>
@@ -83,6 +84,16 @@
           <label class="field-label field" data-types="weekly">
             <span data-i18n="weekday"></span>
             <select id="fieldWeekday"></select>
+          </label>
+        </div>
+        <div class="row">
+          <label class="field-label field" data-types="monthly weekly daily">
+            <span data-i18n="seasonFrom"></span>
+            <select id="fieldFromMonth"></select>
+          </label>
+          <label class="field-label field" data-types="monthly weekly daily">
+            <span data-i18n="seasonTo"></span>
+            <select id="fieldToMonth"></select>
           </label>
         </div>
         <div class="row">
