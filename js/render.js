@@ -350,8 +350,8 @@
       }, [I.t('quarter') + (q + 1)]));
     }
 
-    // 4. Event markers. Dots sit on the ring's center line with the label running
-    // along the ring after them; weekly ticks sit at the ring's inner edge.
+    // 4. Event markers. Dots sit on the ring's center line with the label after
+    // them. Weekly events are only listed in their box, not drawn on the wheel.
     const gEv = el('g', { class: 'events' });
     const fontSize = ringW >= 40 ? 11 : 10;
     const dailyCount = {};
@@ -360,6 +360,7 @@
       const cat = cats.find((c) => c.id === ev.categoryId);
       if (!geo || !cat) continue;
       const type = ev.recurrence && ev.recurrence.type;
+      if (type === 'weekly') continue;
       if (type === 'daily') {
         // A dot per day would be a solid smear: draw one line near the ring's
         // outer edge, all the way round or over the season, labelled at its start.
@@ -397,22 +398,13 @@
         const a = R.angleFor(d, year) + halfDay;
         const g = el('g', { class: 'event' });
         g.appendChild(el('title', null, [`${ev.title} – ${I.formatDate(d)}`]));
-        if (type === 'weekly') {
-          const p1 = polar(geo.inner + 3, a);
-          const p2 = polar(geo.inner + 13, a);
-          g.appendChild(el('line', {
-            x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y,
-            stroke: cat.color, 'stroke-width': 2, 'stroke-linecap': 'round',
-          }));
-        } else {
-          const p = polar(rMid, a);
-          g.appendChild(el('circle', {
-            cx: p.x, cy: p.y, r: dotR, fill: cat.color, stroke: '#ffffff', 'stroke-width': 1.5,
-          }));
-        }
+        const p = polar(rMid, a);
+        g.appendChild(el('circle', {
+          cx: p.x, cy: p.y, r: dotR, fill: cat.color, stroke: '#ffffff', 'stroke-width': 1.5,
+        }));
         if (labelAll || idx === firstIdx) {
           const fit = fitLabel(ev.title, labelAvail, fontSize);
-          g.appendChild(flatLabel(rMid, a, type === 'weekly' ? 4 : dotR + 4, fit.text,
+          g.appendChild(flatLabel(rMid, a, dotR + 4, fit.text,
             Object.assign({ 'font-size': fontSize, fill: '#1e293b' }, fit.attrs)));
         }
         gEv.appendChild(g);

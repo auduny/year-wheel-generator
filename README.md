@@ -6,7 +6,7 @@ recurring activities are placed at the time of year they happen.
 - Activities recur **yearly** (fixed date), **quarterly**, **monthly**, **weekly**, or **daily**.
   Monthly, weekly and daily ones can be limited to a season, like May–September or December–March.
 - Activities are grouped in **categories**, each drawn as its own colored ring.
-- Four boxes around the wheel list the yearly, quarterly, monthly and weekly activities, with the exact date as secondary text.
+- Four boxes around the wheel list the yearly, quarterly, monthly and weekly activities, with the exact date as secondary text. Weekly activities appear only in their box, not on the wheel.
   Daily activities get a box below the wheel, shown only when there are any.
 - Norwegian and English UI, with month and weekday names from the browser's locale data.
 - Auto-saves to `localStorage`, with JSON import/export for sharing and backup.
