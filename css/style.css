@@ -113,6 +113,10 @@ button.icon:hover { background: var(--bg); color: var(--text); filter: none; }
 .message { margin: 10px 0 0; padding: 8px 10px; border-radius: 6px; background: #eff6ff; color: #1e3a8a; font-size: 13px; }
 .message.error { background: #fef2f2; color: #991b1b; }
 
+.footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid var(--border); font-size: 12px; }
+.footer a { color: var(--muted); }
+.footer a:hover { color: inherit; }
+
 .main { padding: 16px; display: flex; align-items: flex-start; justify-content: center; overflow: auto; }
 .wheel { width: 100%; max-width: calc((100vh - 32px) * var(--aspect, 1)); }
 .wheel svg { width: 100%; height: auto; display: block; border-radius: var(--radius); box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12); }
