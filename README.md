@@ -3,6 +3,8 @@
 A single-page browser tool for building a year wheel: a circular calendar where
 recurring activities are placed at the time of year they happen.
 
+**Try it:** https://auduny.github.io/year-wheel-generator/
+
 - Activities recur **yearly** (fixed date), **quarterly**, **monthly**, **weekly**, or **daily**.
   Monthly, weekly and daily ones can be limited to a season, like May–September or December–March.
 - Activities are grouped in **categories**, each drawn as its own colored ring.
@@ -14,7 +16,9 @@ recurring activities are placed at the time of year they happen.
 
 ## Running
 
-Open `index.html` in a browser. No build step, no server, no dependencies.
+Use the hosted version at https://auduny.github.io/year-wheel-generator/
+(GitHub Pages, published from `main`), or open `index.html` locally in a browser.
+No build step, no server, no dependencies.
 
 ## Tests
 
