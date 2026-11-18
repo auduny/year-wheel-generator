@@ -72,6 +72,7 @@
       title: String(raw.title || ''),
       showWeekNumbers: raw.showWeekNumbers !== false,
       showLegend: raw.showLegend !== false,
+      startMonth: clampInt(raw.startMonth, 1, 12, 1),
       categories,
       events,
     };

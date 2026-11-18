@@ -10,6 +10,8 @@ recurring activities are placed at the time of year they happen.
 - Activities are grouped in **categories**, each drawn as its own colored ring.
 - Four boxes around the wheel list the yearly, quarterly, monthly and weekly activities, with the exact date as secondary text. Weekly activities appear only in their box, not on the wheel.
   Daily activities get a box below the wheel, shown only when there are any.
+- The year can start in any month (e.g. August for a school year); the wheel then runs
+  August 2026 – July 2027 with August at the top.
 - Norwegian and English UI, with month and weekday names from the browser's locale data.
 - Auto-saves to `localStorage`, with JSON import/export for sharing and backup.
 - Exports to **SVG** and **PNG** (3000 px).
@@ -51,6 +53,7 @@ node --test test/recurrence.test.js
   "title": "Årshjul",
   "showWeekNumbers": true,
   "showLegend": true,
+  "startMonth": 1,
   "categories": [{ "id": "…", "name": "HR", "color": "#2563eb" }],
   "events": [
     { "id": "…", "title": "Allmøte", "categoryId": "…",

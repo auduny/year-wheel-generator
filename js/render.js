@@ -115,10 +115,10 @@
   }
 
   // Ordering within a box: by when in the period the event happens.
-  function sortKey(r) {
+  function sortKey(r, startMonth) {
     const day = (d) => (d === 'last' ? 32 : Number(d) || 0);
     switch (r.type) {
-      case 'yearly': return r.month * 100 + day(r.day);
+      case 'yearly': return ((r.month - startMonth + 12) % 12) * 100 + day(r.day);
       case 'quarterly': return r.monthInQuarter * 100 + day(r.day);
       case 'monthly': return day(r.day);
       case 'weekly': return r.weekday;
@@ -236,6 +236,7 @@
     const R = root.Recurrence;
     const I = root.I18n;
     const year = Number(state.year);
+    const sm = Number(state.startMonth) || 1;
     const cats = state.categories || [];
     const events = state.events || [];
     const showWeeks = !!state.showWeekNumbers;
@@ -244,7 +245,7 @@
     const rCatOuter = R_OUTER - MONTH_W - (showWeeks ? WEEK_W : 0);
     const avail = rCatOuter - R_HOLE;
     const ringW = cats.length ? Math.min(MAX_RING_W, avail / cats.length) : 0;
-    const halfDay = 180 / R.daysInYear(year);
+    const halfDay = 180 / R.daysInPeriod(year, sm);
 
     // Recurrence boxes beside the wheel; daily box (when there are daily
     // activities) and category key below it.
@@ -254,7 +255,7 @@
       .filter((e) => e.recurrence && e.recurrence.type === type)
       .map((ev) => ({ ev, cat: cats.find((c) => c.id === ev.categoryId) }))
       .filter((it) => it.cat)
-      .sort((a, b) => sortKey(a.ev.recurrence) - sortKey(b.ev.recurrence));
+      .sort((a, b) => sortKey(a.ev.recurrence, sm) - sortKey(b.ev.recurrence, sm));
     const daily = showLegend ? boxItems('daily') : [];
     const dailyW = totalW - 2 * BOX_GAP;
     const belowY = W + (daily.length ? dailyHeight(daily.length, dailyW) + BOX_GAP : 0);
@@ -270,8 +271,8 @@
     // 1. Month ring
     const gMonths = el('g', { class: 'months' });
     for (let m = 1; m <= 12; m++) {
-      const a0 = R.monthStartAngle(year, m);
-      const a1 = R.monthEndAngle(year, m);
+      const a0 = R.monthStartAngle(year, m, sm);
+      const a1 = R.monthEndAngle(year, m, sm);
       gMonths.appendChild(el('path', {
         d: wedgePath(R_OUTER, R_OUTER - MONTH_W, a0, a1),
         fill: m % 2 ? '#e2e8f0' : '#f1f5f9',
@@ -288,11 +289,11 @@
       const rI = rO - WEEK_W;
       const rMid = (rO + rI) / 2;
       g.appendChild(el('circle', { cx: CX, cy: CY, r: rMid, fill: 'none', stroke: '#f8fafc', 'stroke-width': WEEK_W }));
-      const weeks = R.isoWeeksInYear(year);
+      const weeks = R.isoWeeksInYear(year, sm);
       weeks.forEach((wk, i) => {
-        const aStart = R.angleFor(wk.date, year);
+        const aStart = R.angleFor(wk.date, year, sm);
         const next = weeks[i + 1];
-        const aEnd = next ? R.angleFor(next.date, year) : 360;
+        const aEnd = next ? R.angleFor(next.date, year, sm) : 360;
         if (i > 0) {
           const p1 = polar(rI, aStart);
           const p2 = polar(rO, aStart);
@@ -327,7 +328,7 @@
     // Month and quarter grid lines across the rings
     const gGrid = el('g', { class: 'grid' });
     for (let m = 1; m <= 12; m++) {
-      const a = R.monthStartAngle(year, m);
+      const a = R.monthStartAngle(year, m, sm);
       const quarter = (m - 1) % 3 === 0;
       const p1 = polar(R_HOLE, a);
       const p2 = polar(R_OUTER, a);
@@ -341,8 +342,10 @@
     // Center hole and quarter labels
     wheel.appendChild(el('circle', { cx: CX, cy: CY, r: R_HOLE, fill: '#ffffff', stroke: '#e2e8f0', 'stroke-width': 1 }));
     for (let q = 0; q < 4; q++) {
-      const a0 = R.monthStartAngle(year, q * 3 + 1);
-      const a1 = R.monthEndAngle(year, q * 3 + 3);
+      // Calendar quarters; one may wrap past the top when the year starts mid-quarter.
+      const a0 = R.monthStartAngle(year, q * 3 + 1, sm);
+      let a1 = R.monthEndAngle(year, q * 3 + 3, sm);
+      if (a1 <= a0) a1 += 360;
       const p = polar(R_HOLE - 16, (a0 + a1) / 2);
       wheel.appendChild(el('text', {
         x: p.x, y: p.y, 'text-anchor': 'middle', 'dominant-baseline': 'middle',
@@ -372,8 +375,8 @@
         let a0 = 0;
         if (R.hasSeason(ev.recurrence)) {
           const { fromMonth, toMonth } = ev.recurrence;
-          a0 = R.monthStartAngle(year, fromMonth);
-          let a1 = R.monthEndAngle(year, toMonth);
+          a0 = R.monthStartAngle(year, fromMonth, sm);
+          let a1 = R.monthEndAngle(year, toMonth, sm);
           if (a1 <= a0) a1 += 360;
           g.appendChild(el('path', Object.assign({ d: arcPath(r, a0, a1) }, line)));
         } else {
@@ -385,7 +388,7 @@
         gEv.appendChild(g);
         continue;
       }
-      const dates = R.expandEvent(ev, year);
+      const dates = R.expandEvent(ev, year, sm);
       const labelAll = type === 'yearly' || type === 'quarterly';
       const rMid = (geo.inner + geo.outer) / 2;
       const dotR = type === 'monthly' ? 4 : 5.5;
@@ -395,7 +398,7 @@
         ? Math.max(0, dates.findIndex((d) => d.getUTCMonth() + 1 === ev.recurrence.fromMonth))
         : 0;
       dates.forEach((d, idx) => {
-        const a = R.angleFor(d, year) + halfDay;
+        const a = R.angleFor(d, year, sm) + halfDay;
         const g = el('g', { class: 'event' });
         g.appendChild(el('title', null, [`${ev.title} – ${I.formatDate(d)}`]));
         const p = polar(rMid, a);
@@ -422,7 +425,7 @@
     wheel.appendChild(el('text', {
       x: CX, y: CY + 24, 'text-anchor': 'middle', 'dominant-baseline': 'middle',
       'font-size': 20, fill: '#64748b',
-    }, [String(year)]));
+    }, [sm === 1 ? String(year) : `${year}/${String(year + 1).slice(-2)}`]));
 
     // 6. Recurrence boxes and category key
     if (showLegend) {

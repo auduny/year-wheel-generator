@@ -103,3 +103,21 @@ test('ISO week numbers', () => {
   assert.equal(ymd(weeks[1].date), '2027-01-04');
   assert.equal(weeks[weeks.length - 1].week, 52);
 });
+
+test('a period can start in another month than January', () => {
+  // School year Aug 2026 – Jul 2027
+  assert.equal(R.daysInPeriod(2026, 8), 365);
+  assert.equal(R.daysInPeriod(2027, 8), 366); // contains Feb 29 2028
+  assert.equal(R.monthStartAngle(2026, 8, 8), 0);
+  assert.equal(R.monthEndAngle(2026, 7, 8), 360);
+  assert.ok(R.monthStartAngle(2026, 1, 8) > R.monthStartAngle(2026, 12, 8));
+  const yearly = R.expandEvent({ recurrence: { type: 'yearly', month: 5, day: 17 } }, 2026, 8);
+  assert.deepEqual(yearly.map(ymd), ['2027-05-17']);
+  const monthly = R.expandEvent({ recurrence: { type: 'monthly', day: 1 } }, 2026, 8);
+  assert.equal(monthly.length, 12);
+  assert.equal(ymd(monthly[0]), '2026-08-01');
+  assert.equal(ymd(monthly[11]), '2027-07-01');
+  const weeks = R.isoWeeksInYear(2026, 8);
+  assert.equal(ymd(weeks[0].date), '2026-08-01');
+  assert.equal(weeks[0].week, 31);
+});

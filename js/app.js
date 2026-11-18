@@ -23,6 +23,7 @@
       title: '',
       showWeekNumbers: true,
       showLegend: true,
+      startMonth: 1,
       categories: [],
       events: [],
     };
@@ -77,6 +78,7 @@
   function syncSettings() {
     $('title').value = state.title;
     $('year').value = state.year;
+    $('startMonth').value = state.startMonth || 1;
     $('lang').value = state.lang;
     $('showWeekNumbers').checked = !!state.showWeekNumbers;
     $('showLegend').checked = state.showLegend !== false;
@@ -90,6 +92,7 @@
       if (Number.isInteger(y) && y >= 1900 && y <= 9999) update((s) => { s.year = y; });
       else e.target.value = state.year;
     });
+    $('startMonth').addEventListener('change', (e) => update((s) => { s.startMonth = Number(e.target.value); }));
     $('lang').addEventListener('change', (e) => {
       state.lang = e.target.value;
       replaceState(state);
@@ -194,6 +197,7 @@
   function buildSelects() {
     setOptions($('fieldMonth'), Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: I18n.monthName(i + 1) })), true);
     const months = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: I18n.monthName(i + 1) }));
+    setOptions($('startMonth'), months, true);
     setOptions($('fieldFromMonth'), [{ value: '', label: t('allYear') }, ...months], true);
     setOptions($('fieldToMonth'), months, true);
     setOptions($('fieldWeekday'), Array.from({ length: 7 }, (_, i) => ({ value: i, label: I18n.weekdayName(i) })), true);
@@ -366,6 +370,7 @@
     return {
       version: 1,
       year: state.year,
+      startMonth: state.startMonth,
       lang: state.lang,
       title: x('Årshjul', 'Year wheel'),
       showWeekNumbers: true,

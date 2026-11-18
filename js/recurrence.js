@@ -48,17 +48,36 @@
     return Math.ceil(((d.getTime() - yearStart) / 86400000 + 1) / 7);
   }
 
-  // Returns the Monday that starts each ISO week touching the given year,
-  // as [{week, date}] where date is clamped to Jan 1 for the first partial week.
-  function isoWeeksInYear(year) {
+  // A wheel covers one year starting on the 1st of startMonth (1 = calendar
+  // year). With startMonth 8 and year 2026 it runs Aug 2026 – Jul 2027.
+  function periodStart(year, startMonth) {
+    return makeDate(year, startMonth || 1, 1);
+  }
+
+  function periodEnd(year, startMonth) {
+    return makeDate(year + 1, startMonth || 1, 1); // exclusive
+  }
+
+  function daysInPeriod(year, startMonth) {
+    return Math.round((periodEnd(year, startMonth) - periodStart(year, startMonth)) / 86400000);
+  }
+
+  // Calendar year that month (1..12) falls in within the period.
+  function yearOfMonth(year, month, startMonth) {
+    return month >= (startMonth || 1) ? year : year + 1;
+  }
+
+  // Returns the Monday that starts each ISO week touching the period,
+  // as [{week, date}] where date is clamped to the period start for the first partial week.
+  function isoWeeksInYear(year, startMonth) {
     const out = [];
-    const jan1 = makeDate(year, 1, 1);
-    const dec31 = makeDate(year, 12, 31);
-    let cursor = new Date(jan1.getTime());
+    const first = periodStart(year, startMonth);
+    const end = periodEnd(year, startMonth);
+    let cursor = new Date(first.getTime());
     // walk back to Monday
     cursor.setUTCDate(cursor.getUTCDate() - weekdayMon0(cursor));
-    while (cursor <= dec31) {
-      const visible = cursor < jan1 ? jan1 : new Date(cursor.getTime());
+    while (cursor < end) {
+      const visible = cursor < first ? first : new Date(cursor.getTime());
       const thursday = new Date(cursor.getTime());
       thursday.setUTCDate(thursday.getUTCDate() + 3);
       out.push({ week: isoWeek(thursday), date: visible, start: new Date(cursor.getTime()) });
@@ -80,10 +99,16 @@
       : month >= r.fromMonth || month <= r.toMonth;
   }
 
-  function expandEvent(event, year) {
+  function expandEvent(event, year, startMonth) {
     const r = event && event.recurrence;
     if (!r) return [];
-    return expandRule(r, year).filter((d) => inSeason(r, d.getUTCMonth() + 1));
+    let dates = expandRule(r, year);
+    if (startMonth > 1) {
+      const start = periodStart(year, startMonth);
+      const end = periodEnd(year, startMonth);
+      dates = dates.concat(expandRule(r, year + 1)).filter((d) => d >= start && d < end);
+    }
+    return dates.filter((d) => inSeason(r, d.getUTCMonth() + 1));
   }
 
   function expandRule(r, year) {
@@ -136,8 +161,9 @@
   }
 
   // 0 degrees at 12 o'clock, increasing clockwise. Jan 1 -> 0.
-  function angleFor(date, year) {
-    return ((dayOfYear(date) - 1) / daysInYear(year)) * 360;
+  function angleFor(date, year, startMonth) {
+    const days = (date - periodStart(year, startMonth)) / 86400000;
+    return (days / daysInPeriod(year, startMonth)) * 360;
   }
 
   // Angle at the START of a given day-of-year (1-based) and the end of it.
@@ -145,18 +171,19 @@
     return ((doy - 1) / daysInYear(year)) * 360;
   }
 
-  function monthStartAngle(year, month) {
-    return angleFor(makeDate(year, month, 1), year);
+  function monthStartAngle(year, month, startMonth) {
+    return angleFor(makeDate(yearOfMonth(year, month, startMonth), month, 1), year, startMonth);
   }
 
-  function monthEndAngle(year, month) {
-    if (month === 12) return 360;
-    return monthStartAngle(year, month + 1);
+  function monthEndAngle(year, month, startMonth) {
+    const next = (month % 12) + 1;
+    if (next === (startMonth || 1)) return 360;
+    return monthStartAngle(year, next, startMonth);
   }
 
   const api = {
     isLeapYear, daysInYear, daysInMonth, makeDate, clampDay, dayOfYear,
-    weekdayMon0, isoWeek, isoWeeksInYear, hasSeason, inSeason, expandEvent, angleFor,
+    weekdayMon0, isoWeek, periodStart, periodEnd, daysInPeriod, yearOfMonth, isoWeeksInYear, hasSeason, inSeason, expandEvent, angleFor,
     angleForDayOfYear, monthStartAngle, monthEndAngle,
   };
 
